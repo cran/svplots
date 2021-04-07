@@ -1,0 +1,183 @@
+---
+title: "Sv-Plots and Testing Hypotheses"
+author: Uditha Amarananda Wijesuriya
+bibliography: MyBib.bib 
+link-citations: true
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Sv-Plots and Testing Hypotheses}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+## Introduction
+
+Sample variance is one of the measures of dispersion of the data. Sample variance plots (Sv-plots) introduced by @Uditha, provide an appealing graphical tools which illustrate the contribution of squared deviation from each observation in the sample to make the sample variance. Further, these plots found to be revealing important characteristics of the population such as symmetry, skewness and outliers. Further, one version of Sv-plots innovates a graphical method for making decision on hypothesis testing over Population mean.
+
+## Sv-plots
+Two versions of Sv-plots, Sv-plot1 and Sv-plot2, provide two graphical illustrations of squared deviations in sample variance. To create these versions, let _svplots_ package be installed first along with _ggplot2_ and _stats_ in R.
+
+
+```{r setup}
+library(svplots)
+library(ggplot2)
+library(stats)
+```
+In svplots package, functions _svplot1_ and _svplot2_ provide Sv-plot1 and Sv-plot2 while _test1mu_, _test1musm_, _test2mu_ and _test2musm_ lead to make the decision on the hypothesis testing over single and two population means with the data and summary statistics respectively.
+
+### Sv-plot1
+The first version of sample variance plots, Sv-plot1, illustrates each squared deviation by the area of a regular rectangle, equivalently by a square with the side equal to the deviation. Besides, for the purpose of detecting outliers in the data, Sv-plot1 includes two bounds (dash squares) generated at $Q_1-1.5IQR$ and $Q_3+1.5IQR$, where $Q_1$, $Q_3$ and $IQR$ are 1st quartile, 3rd quartile and interquartile range ($IQR=Q_3-Q_1$) respectively. Examples 1 and 2 display Sv-plot1 for two simulated datasets provided by _svplot1_.
+
+#### Example 1
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+set.seed(2021)
+X<-matrix(rnorm(50,mean=2,sd=5))
+svplot1(X,title="Sv-plot1",xlab="x",lbcol="grey5",lscol="grey60",rbcol="grey45",rscol="grey75")
+```
+
+Figure 1. Sv-plot1 illustrates that both left and right squares are evenly distributed about the mean indicating a symmetry of the data distribution.
+
+#### Example 2
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+set.seed(5)
+X <- matrix(rbeta(50,shape1=10,shape2=2))
+    g<-svplot1(X,title="Sv-plot1",lbcol="grey5",lscol="grey60",rbcol="grey45",rscol="grey75")
+        g1=g$Svplot1+theme(panel.grid.minor= element_blank(),
+            panel.grid.major= element_blank(),
+            legend.position = 'none',
+            panel.background = element_rect(fill = "transparent",color = "black"))
+    g$Summary
+    g1        
+```
+
+
+Figure 2. Existence of many left large squares in Sv-plot1 indicates a skewed left distribution. Three squares outside the left dashed square correspond to outliers.
+
+## Sv-plot2
+
+The second version of sample variance plots, Sv-plot2, illustrates value of the squared deviation against each data value. The two bounds, horizontal dash-half-lines placed at the squared deviations evaluated at $Q_1-1.5IQR$ and $Q_3+1.5IQR$, identify the outliers in the dataset. Example 3 and 4 display Sv-plot2 for two simulated datasets provided by _svplot2_.
+
+### Example 3
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+set.seed(10)
+X<-matrix(rf(50,df1=10,df2=5))
+svplot2(X,title="Sv-plot2",xlab="x",lbcol="grey5",lscol="grey60",rbcol="grey45",rscol="grey75")
+```
+
+Figure 3. Longer curve length traced by points from average to the farthest point in right signals that the data follow a right skewed distribution. Five dots above the right dash line are squared deviations corresponding to outliers.
+
+### Example 4
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+set.seed(10)
+X<-matrix(rnorm(50,mean=8,sd=2))
+svplot2(X,title="Sv-plot2",xlab="x",lbcol="grey5",lscol="grey60",rbcol="grey45",rscol="grey75")
+```
+Figure 4. Approximately equal curve lengths traced by points from average to the farthest points in left and right appears that the data follow a symmetric distribution. This dataset is lack of outliers.
+
+## Testing Hypotheses by Sv-plot2 
+
+As an innovative graphical method, Sv-plot2 can be used to make the decision in hypothesis testing. To illustrate Sv-plot2 with both data and summary statistics, the entire graph of the upward parabola traced by the squared deviations is used as Sv-plot2 in hypothesis testing. In examples 5 through 11, significance level is set to be 5%. 
+
+### Testing Hypotheses for Single Population Mean
+
+Two Sv-plots2s created at the sample average and hypothesized mean along with the horizontal dash line created at squared half of the margin of error, are placed on the same plot. If the intersection point is on or above the horizontal line, the null hypothesis is rejected at the specified significance level, otherwise, fail to reject the null hypothesis. Examples 5 and 6 display use of _test1mu_ function as graphical tool to make the decision on testing hypothesis over single mean based on two simulated datasets whereas Example 7 displays use of _test1musm_ function based on summary statistics.
+
+#### Example 5 (Small sample with unknown sigma)
+
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+set.seed(5)
+X=matrix(rnorm(20,mean=3,sd=2))
+test1mu(X,mu0=3.5,alpha=0.05,unkwnsigma=TRUE,sigma=NULL,xlab="x",
+        title="Single mean: Hypothesis testing by Sv-plot2",
+        samcol="grey5",popcol="grey45",thrcol="black")
+```
+
+Figure 5. The intersection point lies above the dash line, and hence reject the null hypothesis that the population mean is 3.5 at 5% significance level.
+
+#### Example 6 (Large sample with known sigma)
+
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+set.seed(5)
+X=matrix(rnorm(40,mean=3,sd=2))
+test1mu(X,mu0=3.5,alpha=0.05,unkwnsigma=FALSE,sigma=2,xlab="x",
+        title="Single mean: Hypothesis testing by Sv-plot2",
+        samcol="grey5",popcol="grey45",thrcol="black")
+```
+
+Figure 6. The intersection point lies below the dash line, and hence fail to reject the null hypothesis that the population mean is 3.5.
+
+#### Example 7
+
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+     test1musm(n=20,xbar=3,s=2,mu0=4.5,alpha=0.05, unkwnsigma=TRUE,sigma=NULL,xlab="x",
+     title="Single mean summary: Hypothesis testing by Sv-plot2",
+     samcol="grey5",popcol="grey45",thrcol="black")
+```
+
+Figure 7. The intersection point lies above the dash line, and hence reject the null hypothesis that the population mean is 4.5 at 5% significance level.
+
+### Testing Hypotheses for two Population Means
+Two Sv-plots2s created at the sample averages and threshold horizontal line created squaring the half of the margin of error will be displayed on the same plot and make the decision as described for single population mean. Examples 8 displays use of _test2mu_ function to make the decision on testing hypothesis over two means based on two independent simulated datasets whereas Example 8 displays that from two dependent samples. 
+
+
+#### Example 8 (Small samples with unknown sigma)
+
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+set.seed(5)
+ test2mu(X1=matrix(rnorm(10,mean=3,sd=2)),X2=matrix(rnorm(20,mean=4,sd=2.5)),
+        paired=FALSE,eqlvar=FALSE,unkwnsigmas=TRUE,
+        sigma1=NULL,sigma2=NULL,alpha=0.05,
+        sam1col="grey5",sam2col="grey45",thrcol="black")
+```
+
+Figure 8. The intersection point lies below the dash line, and hence fail to reject the null hypothesis that the population means equal.
+
+#### Example 9
+
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+set.seed(5)
+X1=matrix(rnorm(10,mean=4,sd=2))
+X2=2*X1
+test2mu(X1,X2,
+        paired=FALSE,eqlvar=FALSE,unkwnsigmas=TRUE,
+        sigma1=NULL,sigma2=NULL,alpha=0.05,
+        sam1col="grey5",sam2col="grey45",thrcol="black")
+```
+
+Figure 9. The intersection point lies above the dash line, and hence reject the null hypothesis that the population means equal at 5% significance level.
+
+Examples 10 displays use of _test2musm_ function to make the decision of testing hypothesis on two means based on summary statistics from two independent samples whereas Example 10 displays that from two dependent samples.
+
+#### Example 10
+
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+test2musm(n1=20,n2=25,xbar1=3,xbar2=4,s1=1,s2=1.5,
+          paired=FALSE,eqlvar=FALSE,unkwnsigmas=TRUE,
+          sigma1=NULL,sigma2=NULL,sdevdif=NULL,alpha=0.05,
+          xlab="x",title="Two means summary: Hypothesis testing by Sv-plot2",
+          sam1col="grey5",sam2col="grey45",thrcol="black")
+```
+
+Figure 10. The intersection point lies above the dash line, and hence reject the null hypothesis that the population means equal at 5% significance level.
+
+
+#### Example 11
+
+```{r, eval=TRUE, fig.width=7, fig.height=4.5}
+test2musm(n1=20,n2=25,xbar1=3,xbar2=3.7552127,s1=1,s2=1.5,
+          paired=FALSE,eqlvar=FALSE,unkwnsigmas=TRUE,
+          sigma1=NULL,sigma2=NULL,sdevdif=NULL,alpha=0.05,
+          xlab="x",title="Two means summary: Hypothesis testing by Sv-plot2",
+          sam1col="grey5",sam2col="grey45",thrcol="black")
+```
+
+Figure 11. The intersection point lies on the dash line, and hence reject the null hypothesis that the  population means equal at 5% significance level.
+
+## Reference
+
